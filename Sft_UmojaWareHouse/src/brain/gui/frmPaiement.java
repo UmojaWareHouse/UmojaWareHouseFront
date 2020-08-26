@@ -23,11 +23,13 @@ import javax.swing.JOptionPane;
  * @author Brain
  */
 public class frmPaiement extends javax.swing.JFrame {
+    
     ClsPaiement pay = new ClsPaiement();
     ClsFacturation fact = new ClsFacturation();
     ClsMois mois = new ClsMois();
     ClsAnnee an = new ClsAnnee();
     ClsUser user = new ClsUser();
+
     /**
      * Creates new form frmPaiement
      */
@@ -35,126 +37,102 @@ public class frmPaiement extends javax.swing.JFrame {
         initComponents();
         this.setLocationRelativeTo(null);
         this.setTitle("UMOJA BUSINESS / PAIEMENT FACTURE");
-        try
-        {
+        try {
             ClsHelper.Load_CmbBox(cmbAnnee, "SELECT annee FROM tAnnee ORDER BY annee DESC");
             ClsHelper.Load_CmbBox(cmbMois, "SELECT mois FROM tMois");
             ClsHelper.Load_CmbBox(cmbFacture, "SELECT id from tFacturation");
             ClsHelper.Load_TblData(tatPaiement, "SELECT p.id NUMERO_PAIEMENT, f.id FACTURE, p.libelle LIBELLE, "
-                + " p.montant MONTANT, p.date_paiement DATE_PAIEMENT, u.uName [USER] "
-                + "FROM tPaiement p "
-                + "INNER JOIN tFacturation f ON p.idFacture = f.id "
-                + "INNER JOIN tUser u ON p.idUser = u.id "
-                + "INNER JOIN tMois m ON p.idMois = m.id "
-                + "INNER JOIN tAnnee a ON p.idAnnee = a.id "
-                + "WHERE m.mois = '"+cmbMois.getSelectedItem().toString()+"' "
-                + "AND a.annee = '"+cmbAnnee.getSelectedItem().toString()+"'");
+                    + " p.montant MONTANT, p.date_paiement DATE_PAIEMENT, u.uName [USER] "
+                    + "FROM tPaiement p "
+                    + "INNER JOIN tFacturation f ON p.idFacture = f.id "
+                    + "INNER JOIN tUser u ON p.idUser = u.id "
+                    + "INNER JOIN tMois m ON p.idMois = m.id "
+                    + "INNER JOIN tAnnee a ON p.idAnnee = a.id "
+                    + "WHERE m.mois = '" + cmbMois.getSelectedItem().toString() + "' "
+                    + "AND a.annee = '" + cmbAnnee.getSelectedItem().toString() + "'");
             
-            txtId.setText(""+ClsHelper.Increment_ID("tPaiement"));
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+            txtId.setText("" + ClsHelper.Increment_ID("tPaiement"));
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }
-
-    private void getTotal(JLabel lbTot, String idFacture)
-    {
-        try
-        {
+    
+    private void getTotal(JLabel lbTot, String idFacture) {
+        try {
             PreparedStatement ps = DbConnect.connectDb().prepareStatement("select total from tFacturation WHERE id = ?");
             ps.setString(1, idFacture);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                  lbTot.setText(rs.getFloat("total")+"");
+                lbTot.setText(rs.getFloat("total") + "");
             }
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "fetch_Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "fetch_Entry Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }
     
-    private void getTotalPaye(JLabel lbDjPay, String idFacture)
-    {
-        try
-        {
+    private void getTotalPaye(JLabel lbDjPay, String idFacture) {
+        try {
             PreparedStatement ps = DbConnect.connectDb().prepareStatement("select ISNULL(SUM(p.montant),0) "
-                + "as MONTANT_PAYE from tPaiement p where p.idFacture = ?");
+                    + "as MONTANT_PAYE from tPaiement p where p.idFacture = ?");
             ps.setString(1, idFacture);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                  lbDjPay.setText(rs.getFloat("MONTANT_PAYE")+"");
+                lbDjPay.setText(rs.getFloat("MONTANT_PAYE") + "");
             }
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "fetch_Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "fetch_Entry Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }
     
-    private void getReste(JLabel lbTot, JLabel lbPaye, JLabel lbRest)
-    {
+    private void getReste(JLabel lbTot, JLabel lbPaye, JLabel lbRest) {
         float tot = Float.valueOf(lbTot.getText());
         float pay = Float.valueOf(lbPaye.getText());
         
         float rest = tot - pay;
-        lbRest.setText(rest+"");
+        lbRest.setText(rest + "");
     }
     
-    private void getDeclarantByFacture(JLabel lbDec, String idFacture)
-    {
-        try
-        {
+    private void getDeclarantByFacture(JLabel lbDec, String idFacture) {
+        try {
             PreparedStatement ps = DbConnect.connectDb().prepareStatement("select e.declarant DECLARANT "
                     + "from  tFacturation f inner join tEntry_Vehicule e "
                     + "on e.id = f.idEntree_vehicule where f.id  = ?");
             ps.setString(1, idFacture);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                  lbDec.setText(rs.getString("DECLARANT"));
+                lbDec.setText(rs.getString("DECLARANT"));
             }
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "fetch_Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "fetch_Entry Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }
     
-    private void changeStateEntry(JLabel lbRest, String myId)
-    {
+    private void changeStateEntry(JLabel lbRest, String myId) {
         double maValeur = Double.valueOf(lbRest.getText());
-        if (maValeur > 0){
-            try
-            {
+        if (maValeur > 0) {
+            try {
                 PreparedStatement ps = DbConnect.connectDb().prepareStatement("UPDATE tEntry_Vehicule "
-                    + "SET etat_facturation = 'A Recouvrer' WHERE id = (SELECT e.id FROM tFacturation f "
-                    + "RIGHT JOIN tEntry_Vehicule e ON e.id = f.idEntree_vehicule where f.id = ?)");
+                        + "SET etat_facturation = 'A Recouvrer' WHERE id = (SELECT e.id FROM tFacturation f "
+                        + "RIGHT JOIN tEntry_Vehicule e ON e.id = f.idEntree_vehicule where f.id = ?)");
                 ps.setString(1, myId);
                 ps.executeUpdate();
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "changeStateEntry Error", JOptionPane.WARNING_MESSAGE);
             }
-            catch (Exception e)
-            {
-                JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "changeStateEntry Error", JOptionPane.WARNING_MESSAGE);
-            }
-        }
-        else if (maValeur ==0) {
-            try
-            {
+        } else if (maValeur == 0) {
+            try {
                 PreparedStatement ps = DbConnect.connectDb().prepareStatement("UPDATE tEntry_Vehicule "
-                    + "SET etat_facturation = 'Payé' WHERE id = (SELECT e.id FROM tFacturation f "
-                    + "RIGHT JOIN tEntry_Vehicule e ON e.id = f.idEntree_vehicule where f.id = ?)");
+                        + "SET etat_facturation = 'Payé' WHERE id = (SELECT e.id FROM tFacturation f "
+                        + "RIGHT JOIN tEntry_Vehicule e ON e.id = f.idEntree_vehicule where f.id = ?)");
                 ps.setString(1, myId);
                 ps.executeUpdate();
-            }
-            catch (Exception e)
-            {
-                JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "changeStateEntry Error", JOptionPane.WARNING_MESSAGE);
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "changeStateEntry Error", JOptionPane.WARNING_MESSAGE);
             }
         }
         
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -277,6 +255,9 @@ public class frmPaiement extends javax.swing.JFrame {
         jLabel15.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jLabel15MouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                jLabel15MouseEntered(evt);
             }
         });
 
@@ -421,44 +402,51 @@ public class frmPaiement extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
-    if(dt_paiement.getDate() == null)
-    {
-        JOptionPane.showMessageDialog(null, "Entrez la Date SVP", "Entry_Vehicule Error", JOptionPane.WARNING_MESSAGE);
-    }
-    else{    
-        try
-        {
-            pay.setId(Integer.valueOf(txtId.getText()));
-            fact.setId(cmbFacture.getSelectedItem().toString());
-            pay.setFacturation(fact);
-            pay.setLibelle(txtLibelle.getText());
-            pay.setDeclarant(lbDeclarant.getText());
-            pay.setMontant(Float.valueOf(txtMontant.getText()));
-            pay.setDate_paiement(new Date(dt_paiement.getDate().getYear(), dt_paiement.getDate().getMonth(), dt_paiement.getDate().getDate()));
-            mois.setMois(cmbMois.getSelectedItem().toString());
-            an.setAnnee(cmbAnnee.getSelectedItem().toString());
-            pay.setMois(mois);
-            pay.setAnnee(an);
-            user.setuName("admin");
-            pay.setUser(user);
-            if (pay.Enregsitrer())
-            {
-                JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Paiement Message", JOptionPane.INFORMATION_MESSAGE);
-                ClsHelper.Load_TblData(tatPaiement, "SELECT * FROM tPaiement");
-                getTotal(lbTotal, cmbFacture.getSelectedItem().toString());
-                getTotalPaye(lbDejaPaye, cmbFacture.getSelectedItem().toString());
-                getReste(lbTotal, lbDejaPaye, lbReste);
-                txtId.setText(""+ClsHelper.Increment_ID("tPaiement"));
-                changeStateEntry(lbReste, cmbFacture.getSelectedItem().toString());
+        if (dt_paiement.getDate() == null) {
+            JOptionPane.showMessageDialog(null, "Entrez la Date SVP", "Entry_Vehicule Error", JOptionPane.WARNING_MESSAGE);
+        } else {
+            try {
+                
+                if (Float.parseFloat(txtMontant.getText()) <= Float.parseFloat(lbReste.getText())) {
+                    pay.setId(Integer.valueOf(txtId.getText()));
+                    
+                    fact.setId(cmbFacture.getSelectedItem().toString());
+                    pay.setFacturation(fact);
+                    pay.setLibelle(txtLibelle.getText());
+                    pay.setDeclarant(lbDeclarant.getText());
+                    pay.setMontant(Float.valueOf(txtMontant.getText()));
+                    pay.setDate_paiement(new Date(dt_paiement.getDate().getYear(), dt_paiement.getDate().getMonth(), dt_paiement.getDate().getDate()));
+                    mois.setMois(cmbMois.getSelectedItem().toString());
+                    an.setAnnee(cmbAnnee.getSelectedItem().toString());
+                    pay.setMois(mois);
+                    pay.setAnnee(an);
+                    user.setuName("admin");
+                    pay.setUser(user);
+                    if (pay.Enregsitrer()) {
+                        JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Paiement Message", JOptionPane.INFORMATION_MESSAGE);
+                        clean();
+                        ClsHelper.Load_TblData(tatPaiement, "SELECT * FROM tPaiement");
+                        getTotal(lbTotal, cmbFacture.getSelectedItem().toString());
+                        getTotalPaye(lbDejaPaye, cmbFacture.getSelectedItem().toString());
+                        getReste(lbTotal, lbDejaPaye, lbReste);
+                        txtId.setText("" + ClsHelper.Increment_ID("tPaiement"));
+                        changeStateEntry(lbReste, cmbFacture.getSelectedItem().toString());
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Montant invalider", "Paiement Message", JOptionPane.ERROR_MESSAGE);
+                }
+                
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Paiement Error", JOptionPane.WARNING_MESSAGE);
             }
         }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Paiement Error", JOptionPane.WARNING_MESSAGE);
-        }
-    }
     }//GEN-LAST:event_jLabel15MouseClicked
-
+    void clean() {
+        txtMontant.setText(null);
+        txtLibelle.setText(null);
+        lbDeclarant.setText(null);
+        txtLibelle.requestFocus();
+    }
     private void cmbFacturePopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_cmbFacturePopupMenuWillBecomeInvisible
         getTotal(lbTotal, cmbFacture.getSelectedItem().toString());
         getTotalPaye(lbDejaPaye, cmbFacture.getSelectedItem().toString());
@@ -467,42 +455,40 @@ public class frmPaiement extends javax.swing.JFrame {
     }//GEN-LAST:event_cmbFacturePopupMenuWillBecomeInvisible
 
     private void cmbMoisPopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_cmbMoisPopupMenuWillBecomeInvisible
-        try
-        {
+        try {
             ClsHelper.Load_TblData(tatPaiement, "SELECT p.id NUMERO_PAIEMENT, f.id FACTURE, p.libelle LIBELLE, "
-                + " p.montant MONTANT, p.date_paiement DATE_PAIEMENT, u.uName [USER] "
-                + "FROM tPaiement p "
-                + "INNER JOIN tFacturation f ON p.idFacture = f.id "
-                + "INNER JOIN tUser u ON p.idUser = u.id "
-                + "INNER JOIN tMois m ON p.idMois = m.id "
-                + "INNER JOIN tAnnee a ON p.idAnnee = a.id "
-                + "WHERE m.mois = '"+cmbMois.getSelectedItem().toString()+"' "
-                + "AND a.annee = '"+cmbAnnee.getSelectedItem().toString()+"'");
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+                    + " p.montant MONTANT, p.date_paiement DATE_PAIEMENT, u.uName [USER] "
+                    + "FROM tPaiement p "
+                    + "INNER JOIN tFacturation f ON p.idFacture = f.id "
+                    + "INNER JOIN tUser u ON p.idUser = u.id "
+                    + "INNER JOIN tMois m ON p.idMois = m.id "
+                    + "INNER JOIN tAnnee a ON p.idAnnee = a.id "
+                    + "WHERE m.mois = '" + cmbMois.getSelectedItem().toString() + "' "
+                    + "AND a.annee = '" + cmbAnnee.getSelectedItem().toString() + "'");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_cmbMoisPopupMenuWillBecomeInvisible
 
     private void cmbAnneePopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_cmbAnneePopupMenuWillBecomeInvisible
-        try
-        {
+        try {
             ClsHelper.Load_TblData(tatPaiement, "SELECT p.id NUMERO_PAIEMENT, f.id FACTURE, p.libelle LIBELLE, "
-                + " p.montant MONTANT, p.date_paiement DATE_PAIEMENT, u.uName [USER] "
-                + "FROM tPaiement p "
-                + "INNER JOIN tFacturation f ON p.idFacture = f.id "
-                + "INNER JOIN tUser u ON p.idUser = u.id "
-                + "INNER JOIN tMois m ON p.idMois = m.id "
-                + "INNER JOIN tAnnee a ON p.idAnnee = a.id "
-                + "WHERE m.mois = '"+cmbMois.getSelectedItem().toString()+"' "
-                + "AND a.annee = '"+cmbAnnee.getSelectedItem().toString()+"'");
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+                    + " p.montant MONTANT, p.date_paiement DATE_PAIEMENT, u.uName [USER] "
+                    + "FROM tPaiement p "
+                    + "INNER JOIN tFacturation f ON p.idFacture = f.id "
+                    + "INNER JOIN tUser u ON p.idUser = u.id "
+                    + "INNER JOIN tMois m ON p.idMois = m.id "
+                    + "INNER JOIN tAnnee a ON p.idAnnee = a.id "
+                    + "WHERE m.mois = '" + cmbMois.getSelectedItem().toString() + "' "
+                    + "AND a.annee = '" + cmbAnnee.getSelectedItem().toString() + "'");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_cmbAnneePopupMenuWillBecomeInvisible
+
+    private void jLabel15MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseEntered
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jLabel15MouseEntered
 
     /**
      * @param args the command line arguments

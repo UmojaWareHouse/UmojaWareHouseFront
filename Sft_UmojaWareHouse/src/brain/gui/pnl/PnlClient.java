@@ -16,26 +16,25 @@ import javax.swing.JOptionPane;
  * @author Brain
  */
 public class PnlClient extends javax.swing.JPanel {
+
     ClsClient_Fidele cf = new ClsClient_Fidele();
     ClsDeclarant dec = new ClsDeclarant();
     ClsAgence ag = new ClsAgence();
+
     /**
      * Creates new form PnlClient
      */
     public PnlClient() {
         initComponents();
-        try
-        {
+        try {
             ClsHelper.Load_TblData(TabAgence, "SELECT * FROM tAgence");
             ClsHelper.Load_TblData(TabDeclarant, "SELECT * FROM tDeclarant");
             ClsHelper.Load_TblData(TabClient, "SELECT * FROM tClient_Fidele");
-            txtIdAg.setText(""+ClsHelper.Increment_ID("tAgence"));
-            txtIdDec.setText(""+ClsHelper.Increment_ID("tDeclarant"));
-            txtIdCf.setText(""+ClsHelper.Increment_ID("tClient_Fidele"));
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Customer Loading Error", JOptionPane.WARNING_MESSAGE);
+            txtIdAg.setText("" + ClsHelper.Increment_ID("tAgence"));
+            txtIdDec.setText("" + ClsHelper.Increment_ID("tDeclarant"));
+            txtIdCf.setText("" + ClsHelper.Increment_ID("tClient_Fidele"));
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Customer Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -634,65 +633,71 @@ public class PnlClient extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
-    try 
-    {
-        ag.setId(Integer.valueOf(txtIdAg.getText()));
-        ag.setNom_agence(txtAgence.getText());
-        ag.setNumero_tel(txtTelAg.getText());
-        ag.setEmail(txtEmailAg.getText());
-        if (ag.Enregsitrer())
-        {
-            JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Agence Message", JOptionPane.INFORMATION_MESSAGE);
-            ClsHelper.Load_TblData(TabAgence, "SELECT * FROM tAgence");
-            txtIdAg.setText(""+ClsHelper.Increment_ID("tAgence"));
+        try {
+            ag.setId(Integer.valueOf(txtIdAg.getText()));
+            ag.setNom_agence(txtAgence.getText());
+            ag.setNumero_tel(txtTelAg.getText());
+            ag.setEmail(txtEmailAg.getText());
+            if (ag.Enregsitrer()) {
+                JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Agence Message", JOptionPane.INFORMATION_MESSAGE);
+                clean();
+                ClsHelper.Load_TblData(TabAgence, "SELECT * FROM tAgence");
+                txtIdAg.setText("" + ClsHelper.Increment_ID("tAgence"));
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Agence Error", JOptionPane.WARNING_MESSAGE);
         }
-    } 
-    catch (Exception e) 
-    {
-        JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Agence Error", JOptionPane.WARNING_MESSAGE);
-    }
     }//GEN-LAST:event_jLabel15MouseClicked
-
-    private void jLabel19MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel19MouseClicked
-    try 
-    {
-        dec.setId(Integer.valueOf(txtIdDec.getText()));
-        dec.setNom_complet(txtNomDec.getText());
-        dec.setNumero_tel(txtTelDec.getText());
-        dec.setEmail(txtEmailDec.getText());
-        if (dec.Enregsitrer())
-        {
-            JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Agence Message", JOptionPane.INFORMATION_MESSAGE);
-            ClsHelper.Load_TblData(TabDeclarant, "SELECT * FROM tDeclarant");
-            txtIdDec.setText(""+ClsHelper.Increment_ID("tDeclarant"));
-        }
-    } 
-    catch (Exception e) 
-    {
-        JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Agence Error", JOptionPane.WARNING_MESSAGE);
+    void clean() {
+        txtAgence.setText(null);
+        txtTelAg.setText(null);
+        txtEmailAg.setText(null);
+        txtAgence.requestFocus();
     }
+    private void jLabel19MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel19MouseClicked
+        try {
+            dec.setId(Integer.valueOf(txtIdDec.getText()));
+            dec.setNom_complet(txtNomDec.getText());
+            dec.setNumero_tel(txtTelDec.getText());
+            dec.setEmail(txtEmailDec.getText());
+            if (dec.Enregsitrer()) {
+                JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Agence Message", JOptionPane.INFORMATION_MESSAGE);
+                cleandec();
+                ClsHelper.Load_TblData(TabDeclarant, "SELECT * FROM tDeclarant");
+                txtIdDec.setText("" + ClsHelper.Increment_ID("tDeclarant"));
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Agence Error", JOptionPane.WARNING_MESSAGE);
+        }
     }//GEN-LAST:event_jLabel19MouseClicked
-
+    void cleandec() {
+        txtNomDec.setText(null);
+        txtTelDec.setText(null);
+        txtEmailDec.setText(null);
+        txtNomDec.requestFocus();
+    }
     private void jLabel23MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel23MouseClicked
-        try 
-        {
+        try {
             cf.setId(Integer.valueOf(txtIdCf.getText()));
             cf.setNom_complet(txtNomCf.getText());
             cf.setNumero_tel(txtTelCf.getText());
             cf.setEmail(txtEmailCf.getText());
-            if (cf.Enregsitrer())
-            {
+            if (cf.Enregsitrer()) {
                 JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Agence Message", JOptionPane.INFORMATION_MESSAGE);
+                cleancf();
                 ClsHelper.Load_TblData(TabClient, "SELECT * FROM tClient_Fidele");
-            txtIdCf.setText(""+ClsHelper.Increment_ID("tClient_Fidele"));
+                txtIdCf.setText("" + ClsHelper.Increment_ID("tClient_Fidele"));
             }
-        } 
-        catch (Exception e) 
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Agence Error", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Agence Error", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_jLabel23MouseClicked
-
+    void cleancf() {
+        txtNomCf.setText(null);
+        txtTelCf.setText(null);
+        txtEmailCf.setText(null);
+        txtNomCf.requestFocus();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable TabAgence;

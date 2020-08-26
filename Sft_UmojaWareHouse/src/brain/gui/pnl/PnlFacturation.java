@@ -15,6 +15,9 @@ import brain.model.ClsMois;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
@@ -23,44 +26,42 @@ import javax.swing.JOptionPane;
  * @author Brain
  */
 public class PnlFacturation extends javax.swing.JPanel {
+
     ClsAnnee an = new ClsAnnee();
     ClsMois mois = new ClsMois();
     ClsFacturation fact = new ClsFacturation();
     ClsEntry_Vehicule ev = new ClsEntry_Vehicule();
+
     /**
      * Creates new form PnlFacturation
      */
     public PnlFacturation() {
         initComponents();
         setTextVide();
-        try
-        {
+        try {
             getEntry_Element(cmbIdVehicule.getSelectedItem().toString());
             ClsHelper.Load_CmbBox(cmbAnnee, "SELECT annee FROM tAnnee ORDER BY annee DESC");
             ClsHelper.Load_CmbBox(cmbMois, "SELECT mois FROM tMois");
             ClsHelper.Load_CmbBox(cmbIdVehicule, "SELECT CONCAT(id,' - ',date_entree,' - ', plaque, ' - ', numero) "
-            + "FROM tEntry_Vehicule");
-            
+                    + "FROM tEntry_Vehicule");
+
             ClsHelper.Load_TblData(jTable1, "SELECT f.id ID, CONCAT(e.id,' - ',e.date_entree,' - ', e.plaque, ' - ', e.numero) VEHICULE, "
-            + "f.date_sortie DATE_SORTIE, f.nom_client_fidele CLIENT, f.[description] [DESCRIPTION], f.poids_facture POIDS_FACTURE, "
-            + "f.nbre_jour NOMBRE_JOURS, f.parking PARKING, f.sureveillance_1 [SURV 1], f.sureveillance_2 [SURV 2], f.manutention MANUTENTION, "
-            + "f.tva TVA, f.frais_admin FRAIS_ADMIN, f.total MONTANT_TOTAL FROM tFacturation f "
-            + "INNER JOIN tEntry_Vehicule e ON f.idEntree_vehicule = e.id "
-            + "INNER JOIN tMois m ON f.idMois = m.id "
-            + "INNER JOIN tAnnee a ON f.idAnnee = a.id "
-            + "WHERE m.mois = '"+cmbMois.getSelectedItem().toString()+"' "
-            + "AND a.annee = '"+cmbAnnee.getSelectedItem().toString()+"'");
-            
-            txtId.setText("FACT0"+ClsHelper.Increment_IDStr("tFacturation"));
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Facturation Loading Error", JOptionPane.WARNING_MESSAGE);
+                    + "f.date_sortie DATE_SORTIE, f.nom_client_fidele CLIENT, f.[description] [DESCRIPTION], f.poids_facture POIDS_FACTURE, "
+                    + "f.nbre_jour NOMBRE_JOURS, f.parking PARKING, f.sureveillance_1 [SURV 1], f.sureveillance_2 [SURV 2], f.manutention MANUTENTION, "
+                    + "f.tva TVA, f.frais_admin FRAIS_ADMIN, f.total MONTANT_TOTAL FROM tFacturation f "
+                    + "INNER JOIN tEntry_Vehicule e ON f.idEntree_vehicule = e.id "
+                    + "INNER JOIN tMois m ON f.idMois = m.id "
+                    + "INNER JOIN tAnnee a ON f.idAnnee = a.id "
+                    + "WHERE m.mois = '" + cmbMois.getSelectedItem().toString() + "' "
+                    + "AND a.annee = '" + cmbAnnee.getSelectedItem().toString() + "'");
+
+            txtId.setText("FACT0" + ClsHelper.Increment_IDStr("tFacturation"));
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Facturation Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }
-    
-    private void setTextVide()
-    {
+
+    private void setTextVide() {
         lbIdEntry.setText("");
         lb_dateEntree.setText("");
         lb_Num.setText("");
@@ -70,46 +71,38 @@ public class PnlFacturation extends javax.swing.JPanel {
         lb_poid.setText("");
     }
 
-    private void getEntry_Element(String idValue)
-    {
+    private void getEntry_Element(String idValue) {
         //selectionne une entree de vehicule et donne les informations sur cete entree
-        try
-        {
+        try {
             PreparedStatement ps = DbConnect.connectDb().prepareStatement("SELECT * FROM tEntry_Vehicule WHERE CONCAT(id,' - ',date_entree,' - ', plaque, ' - ', numero) = ?");
             ps.setString(1, idValue);
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                lbIdEntry.setText("ID: "+rs.getString("id"));
-                lb_dateEntree.setText("Date: "+rs.getString("date_entree"));
-                lb_Num.setText("Numéro: "+rs.getString("numero"));
-                lb_Plaque.setText("laque: "+rs.getString("plaque"));
-                lb_nature.setText("M/se: "+rs.getString("nature_mese"));
-                lb_declarant.setText("Déclarant: "+rs.getString("declarant"));
-                lb_poid.setText("Poids: "+rs.getString("poids_reel"));                       
+                lbIdEntry.setText("ID: " + rs.getString("id"));
+                lb_dateEntree.setText("Date: " + rs.getString("date_entree"));
+                lb_Num.setText("Numéro: " + rs.getString("numero"));
+                lb_Plaque.setText("laque: " + rs.getString("plaque"));
+                lb_nature.setText("M/se: " + rs.getString("nature_mese"));
+                lb_declarant.setText("Déclarant: " + rs.getString("declarant"));
+                lb_poid.setText("Poids: " + rs.getString("poids_reel"));
             }
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "fetch_Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "fetch_Entry Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }
-    
-    private void changeStateEntry(String myId)
-    {
-        try
-        {
+
+    private void changeStateEntry(String myId) {
+        try {
             PreparedStatement ps = DbConnect.connectDb().prepareStatement("UPDATE tEntry_Vehicule "
-                + "SET etat_facturation = 'A Recouvrer en totalité' "
-                + "WHERE CONCAT(id,' - ',date_entree,' - ', plaque, ' - ', numero) = ?");
+                    + "SET etat_facturation = 'A Recouvrer en totalité' "
+                    + "WHERE CONCAT(id,' - ',date_entree,' - ', plaque, ' - ', numero) = ?");
             ps.setString(1, myId);
             ps.executeUpdate();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "changeStateEntry Error", JOptionPane.WARNING_MESSAGE);
         }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "changeStateEntry Error", JOptionPane.WARNING_MESSAGE);
-        }            
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -180,6 +173,11 @@ public class PnlFacturation extends javax.swing.JPanel {
 
         jTable1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jTable1.setColumnSelectionAllowed(true);
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
 
         jLabel13.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
@@ -201,6 +199,11 @@ public class PnlFacturation extends javax.swing.JPanel {
         dropShadowBorder3.setShowTopShadow(true);
         jLabel16.setBorder(dropShadowBorder3);
         jLabel16.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel16.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel16MouseClicked(evt);
+            }
+        });
 
         jLabel15.setFont(new java.awt.Font("SansSerif", 1, 14)); // NOI18N
         jLabel15.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -554,7 +557,7 @@ public class PnlFacturation extends javax.swing.JPanel {
                             .addComponent(txtTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(lbCalcul, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lbCalcul, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
                     .addComponent(txtParking, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -648,7 +651,7 @@ public class PnlFacturation extends javax.swing.JPanel {
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 302, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(13, 13, 13)
                         .addComponent(lbIdEntry, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -680,10 +683,8 @@ public class PnlFacturation extends javax.swing.JPanel {
     }//GEN-LAST:event_jLabel19MouseClicked
 
     private void cmbTypePopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_cmbTypePopupMenuWillBecomeInvisible
-        try 
-        {
-            if (cmbType.getSelectedItem().toString().equals("IT")) 
-            {
+        try {
+            if (cmbType.getSelectedItem().toString().equals("IT")) {
                 txtParking.setText("");
                 txtNbreJour.setText("");
                 txtDescription.setText("FACTURATION IT");
@@ -702,9 +703,7 @@ public class PnlFacturation extends javax.swing.JPanel {
                 txtTva.setText("");
                 txtParking.setEnabled(true);
                 txtNbreJour.setEnabled(true);
-            }
-            else if (cmbType.getSelectedItem().toString().equals("CLIENT FIDELE")) 
-            {
+            } else if (cmbType.getSelectedItem().toString().equals("CLIENT FIDELE")) {
                 txtParking.setText("");
                 txtNbreJour.setText("");
                 txtDescription.setText("CLIENT FIDELE");
@@ -726,9 +725,7 @@ public class PnlFacturation extends javax.swing.JPanel {
                 txtManutention.setText("");
                 txtFraisAdmin.setText("");
                 txtPoids.setText("");
-            }
-            else if (cmbType.getSelectedItem().toString().equals("AUTRE FACTURATION")) 
-            {
+            } else if (cmbType.getSelectedItem().toString().equals("AUTRE FACTURATION")) {
                 txtDescription.setText("AUTRE FACTURATION");
                 txtClient_Fidele.setEnabled(true);
                 txtClient_Fidele.setText("NON");
@@ -742,7 +739,7 @@ public class PnlFacturation extends javax.swing.JPanel {
                 txtTva.setEnabled(false);
                 txtNbreJour.setEnabled(false);
                 txtParking.setText("");
-                txtPoids.setText("");                
+                txtPoids.setText("");
                 txtFraisAdmin.setText("");
                 txtPoids.setText("");
                 txtSurv1.setText("");
@@ -750,9 +747,7 @@ public class PnlFacturation extends javax.swing.JPanel {
                 txtTva.setText("");
                 txtNbreJour.setText("");
                 txtManutention.setText("");
-            }
-            else if (cmbType.getSelectedItem().toString().equals("FACTURATION NORMALE")) 
-            {
+            } else if (cmbType.getSelectedItem().toString().equals("FACTURATION NORMALE")) {
                 txtParking.setText("");
                 txtNbreJour.setText("");
                 txtDescription.setText("AUTRE FACTURATION");
@@ -768,42 +763,31 @@ public class PnlFacturation extends javax.swing.JPanel {
                 txtTva.setEnabled(true);
                 txtNbreJour.setEnabled(true);
             }
-             
-        }
-        catch (Exception e) 
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_cmbTypePopupMenuWillBecomeInvisible
 
     private void txtNbreJourActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNbreJourActionPerformed
-        
+
     }//GEN-LAST:event_txtNbreJourActionPerformed
 
     private void lbCalculMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lbCalculMouseClicked
-        if (cmbType.getSelectedItem().toString().equals("IT")) 
-        {
+        if (cmbType.getSelectedItem().toString().equals("IT")) {
             if (!txtParking.getText().isEmpty() || !txtNbreJour.getText().isEmpty()) {
                 float park = Float.valueOf(txtParking.getText());
                 float nbre = Float.valueOf(txtNbreJour.getText());
-                float tot = park*nbre;
-                txtTotal.setText(""+tot);
+                float tot = park * nbre;
+                txtTotal.setText("" + tot);
             }
-        }
-        else if (cmbType.getSelectedItem().toString().equals("CLIENT FIDELE")) 
-        {
-        }
-        else if (cmbType.getSelectedItem().toString().equals("AUTRE FACTURATION")) 
-        {  
-        }
-        else if (cmbType.getSelectedItem().toString().equals("FACTURATION NORMALE")) 
-        {
-            if(txtManutention.getText().isEmpty() || txtFraisAdmin.getText().isEmpty()){
+        } else if (cmbType.getSelectedItem().toString().equals("CLIENT FIDELE")) {
+        } else if (cmbType.getSelectedItem().toString().equals("AUTRE FACTURATION")) {
+        } else if (cmbType.getSelectedItem().toString().equals("FACTURATION NORMALE")) {
+            if (txtManutention.getText().isEmpty() || txtFraisAdmin.getText().isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Entrez le montant de manutention ou des frais administratifs",
                         "Facturation Error", JOptionPane.WARNING_MESSAGE);
-            }
-            else
-            {
+            } else {
                 float poids, park, nbre, surv1, surv2, manut, fradmin;
                 poids = Float.valueOf(txtPoids.getText());
                 park = Float.valueOf(txtParking.getText());
@@ -814,199 +798,179 @@ public class PnlFacturation extends javax.swing.JPanel {
                 //calcul
                 float calc_surv1, calc_surv2, calc_tva, calc_fradmin, calc_totalht, calc_totalttc;
                 calc_surv1 = (float) (poids * 0.005);
-                txtSurv1.setText(""+calc_surv1);
+                txtSurv1.setText("" + calc_surv1);
 
-                calc_surv2 = (float)(poids*0.03*(nbre-2));
-                txtSurv2.setText(""+calc_surv2);
+                calc_surv2 = (float) (poids * 0.03 * (nbre - 2));
+                txtSurv2.setText("" + calc_surv2);
 
-                calc_totalht = (calc_surv1+calc_surv2+manut+park);
-                calc_tva = (float)(calc_totalht * 0.16);
-                txtTva.setText(""+calc_tva);
-                
+                calc_totalht = (calc_surv1 + calc_surv2 + manut + park);
+                calc_tva = (float) (calc_totalht * 0.16);
+                txtTva.setText("" + calc_tva);
+
                 //calcul total
                 calc_totalttc = (calc_totalht + calc_tva);
-                txtTotal.setText(""+calc_totalttc);
-            }            
+                txtTotal.setText("" + calc_totalttc);
+            }
         }
     }//GEN-LAST:event_lbCalculMouseClicked
 
     private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
-    if(jXDatePicker1.getDate() == null)
-    {
-        JOptionPane.showMessageDialog(null, "Entrez la Date SVP", "Entry_Vehicule Error", JOptionPane.WARNING_MESSAGE);
-    }
-    else{
-        if (cmbType.getSelectedItem().toString().equals("IT")) 
-        {
-            try
-            {
-                // code ici
-                fact.setId(txtId.getText());
-                ev.setId(cmbIdVehicule.getSelectedItem().toString());
-                fact.setEntry_Vehicule(ev);
-                fact.setDate_sortie(new Date(jXDatePicker1.getDate().getYear(), jXDatePicker1.getDate().getMonth(), jXDatePicker1.getDate().getDate()));
-                fact.setType_Facturation(cmbType.getSelectedItem().toString());
-                fact.setNom_client_fidele(txtClient_Fidele.getText());
-                fact.setDescription(txtDescription.getText());
-                fact.setPoids_facture(txtPoids.getText());
-                fact.setNbre_jour(txtNbreJour.getText());
-                fact.setTotal(Float.valueOf(txtTotal.getText()));
-                mois.setMois(cmbMois.getSelectedItem().toString());
-                an.setAnnee(cmbAnnee.getSelectedItem().toString());
-                fact.setMois(mois);
-                fact.setAnnee(an);
-                if (fact.Enregsitrer()) {
-                    JOptionPane.showMessageDialog(null, "Facture etablie avec succes", "Facturation Message", JOptionPane.INFORMATION_MESSAGE);
-                    ClsHelper.Load_TblData(jTable1, "SELECT * FROM tFacturation");
-                    txtId.setText("FACT0"+ClsHelper.Increment_IDStr("tFacturation"));
-                    changeStateEntry(cmbIdVehicule.getSelectedItem().toString());
-                    
+        if (jXDatePicker1.getDate() == null) {
+            JOptionPane.showMessageDialog(null, "Entrez la Date SVP", "Entry_Vehicule Error", JOptionPane.WARNING_MESSAGE);
+        } else {
+            if (cmbType.getSelectedItem().toString().equals("IT")) {
+                try {
+                    // code ici
+                    fact.setId(txtId.getText());
+                    ev.setId(cmbIdVehicule.getSelectedItem().toString());
+                    fact.setEntry_Vehicule(ev);
+                    fact.setDate_sortie(new Date(jXDatePicker1.getDate().getYear(), jXDatePicker1.getDate().getMonth(), jXDatePicker1.getDate().getDate()));
+                    fact.setType_Facturation(cmbType.getSelectedItem().toString());
+                    fact.setNom_client_fidele(txtClient_Fidele.getText());
+                    fact.setDescription(txtDescription.getText());
+                    fact.setPoids_facture(txtPoids.getText());
+                    fact.setNbre_jour(txtNbreJour.getText());
+                    fact.setTotal(Float.valueOf(txtTotal.getText()));
+                    mois.setMois(cmbMois.getSelectedItem().toString());
+                    an.setAnnee(cmbAnnee.getSelectedItem().toString());
+                    fact.setMois(mois);
+                    fact.setAnnee(an);
+                    if (fact.Enregsitrer()) {
+                        JOptionPane.showMessageDialog(null, "Facture etablie avec succes", "Facturation Message", JOptionPane.INFORMATION_MESSAGE);
+                        ClsHelper.Load_TblData(jTable1, "SELECT * FROM tFacturation");
+                        txtId.setText("FACT0" + ClsHelper.Increment_IDStr("tFacturation"));
+                        changeStateEntry(cmbIdVehicule.getSelectedItem().toString());
+
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (cmbType.getSelectedItem().toString().equals("CLIENT FIDELE")) {
+                try {
+                    // code ici
+                    fact.setId(txtId.getText());
+                    ev.setId(cmbIdVehicule.getSelectedItem().toString());
+                    fact.setEntry_Vehicule(ev);
+                    fact.setDate_sortie(new Date(jXDatePicker1.getDate().getYear(), jXDatePicker1.getDate().getMonth(), jXDatePicker1.getDate().getDate()));
+                    fact.setType_Facturation(cmbType.getSelectedItem().toString());
+                    fact.setNom_client_fidele(txtClient_Fidele.getText());
+                    fact.setDescription(txtDescription.getText());
+                    fact.setTotal(Float.valueOf(txtTotal.getText()));
+                    mois.setMois(cmbMois.getSelectedItem().toString());
+                    an.setAnnee(cmbAnnee.getSelectedItem().toString());
+                    fact.setMois(mois);
+                    fact.setAnnee(an);
+                    if (fact.Enregsitrer()) {
+                        JOptionPane.showMessageDialog(null, "Facture etablie avec succes", "Facturation Message", JOptionPane.INFORMATION_MESSAGE);
+                        ClsHelper.Load_TblData(jTable1, "SELECT * FROM tFacturation");
+                        txtId.setText("FACT0" + ClsHelper.Increment_IDStr("tFacturation"));
+                        changeStateEntry(cmbIdVehicule.getSelectedItem().toString());
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (cmbType.getSelectedItem().toString().equals("AUTRE FACTURATION")) {
+                try {
+                    // code ici
+                    fact.setId(txtId.getText());
+                    ev.setId(cmbIdVehicule.getSelectedItem().toString());
+                    fact.setEntry_Vehicule(ev);
+                    fact.setDate_sortie(new Date(jXDatePicker1.getDate().getYear(), jXDatePicker1.getDate().getMonth(), jXDatePicker1.getDate().getDate()));
+                    fact.setType_Facturation(cmbType.getSelectedItem().toString());
+                    fact.setNom_client_fidele(txtClient_Fidele.getText());
+                    fact.setDescription(txtDescription.getText());
+                    fact.setTotal(Float.valueOf(txtTotal.getText()));
+                    mois.setMois(cmbMois.getSelectedItem().toString());
+                    an.setAnnee(cmbAnnee.getSelectedItem().toString());
+                    fact.setMois(mois);
+                    fact.setAnnee(an);
+                    if (fact.Enregsitrer()) {
+                        JOptionPane.showMessageDialog(null, "Facture etablie avec succes", "Facturation Message", JOptionPane.INFORMATION_MESSAGE);
+                        ClsHelper.Load_TblData(jTable1, "SELECT * FROM tFacturation");
+                        txtId.setText("FACT0" + ClsHelper.Increment_IDStr("tFacturation"));
+                        changeStateEntry(cmbIdVehicule.getSelectedItem().toString());
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
+                }
+            } else if (cmbType.getSelectedItem().toString().equals("FACTURATION NORMALE")) {
+                try {
+                    // code ici
+                    fact.setId(txtId.getText());
+                    ev.setId(cmbIdVehicule.getSelectedItem().toString());
+                    fact.setEntry_Vehicule(ev);
+                    fact.setDate_sortie(new Date(jXDatePicker1.getDate().getYear(), jXDatePicker1.getDate().getMonth(), jXDatePicker1.getDate().getDate()));
+                    fact.setType_Facturation(cmbType.getSelectedItem().toString());
+                    fact.setNom_client_fidele(txtClient_Fidele.getText());
+                    fact.setDescription(txtDescription.getText());
+                    fact.setPoids_facture(txtPoids.getText());
+                    fact.setNbre_jour(txtNbreJour.getText());
+                    fact.setParking(txtParking.getText());
+                    fact.setSureveillance_1(txtSurv1.getText());
+                    fact.setSureveillance_2(txtSurv2.getText());
+                    fact.setManutention(txtManutention.getText());
+                    fact.setTva(txtTva.getText());
+                    fact.setFrais_admin(txtFraisAdmin.getText());
+                    fact.setTotal(Float.valueOf(txtTotal.getText()));
+                    mois.setMois(cmbMois.getSelectedItem().toString());
+                    an.setAnnee(cmbAnnee.getSelectedItem().toString());
+                    fact.setMois(mois);
+                    fact.setAnnee(an);
+                    if (fact.Enregsitrer()) {
+                        JOptionPane.showMessageDialog(null, "Facture établie avec succès", "Facturation Message", JOptionPane.INFORMATION_MESSAGE);
+                        ClsHelper.Load_TblData(jTable1, "SELECT * FROM tFacturation");
+                        txtId.setText("FACT0" + ClsHelper.Increment_IDStr("tFacturation"));
+                        changeStateEntry(cmbIdVehicule.getSelectedItem().toString());
+                    }
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
                 }
             }
-            catch (Exception e)
-            {
-                JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
-            }
         }
-        else if (cmbType.getSelectedItem().toString().equals("CLIENT FIDELE")) 
-        {
-            try
-            {
-                // code ici
-                fact.setId(txtId.getText());
-                ev.setId(cmbIdVehicule.getSelectedItem().toString());
-                fact.setEntry_Vehicule(ev);
-                fact.setDate_sortie(new Date(jXDatePicker1.getDate().getYear(), jXDatePicker1.getDate().getMonth(), jXDatePicker1.getDate().getDate()));
-                fact.setType_Facturation(cmbType.getSelectedItem().toString());
-                fact.setNom_client_fidele(txtClient_Fidele.getText());
-                fact.setDescription(txtDescription.getText());
-                fact.setTotal(Float.valueOf(txtTotal.getText()));
-                mois.setMois(cmbMois.getSelectedItem().toString());
-                an.setAnnee(cmbAnnee.getSelectedItem().toString());
-                fact.setMois(mois);
-                fact.setAnnee(an);
-                if (fact.Enregsitrer()) {
-                    JOptionPane.showMessageDialog(null, "Facture etablie avec succes", "Facturation Message", JOptionPane.INFORMATION_MESSAGE);
-                    ClsHelper.Load_TblData(jTable1, "SELECT * FROM tFacturation");
-                    txtId.setText("FACT0"+ClsHelper.Increment_IDStr("tFacturation"));
-                    changeStateEntry(cmbIdVehicule.getSelectedItem().toString());
-                }
-            }
-            catch (Exception e)
-            {
-                JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
-            }
-        }
-        else if (cmbType.getSelectedItem().toString().equals("AUTRE FACTURATION")) 
-        {
-            try
-            {
-                // code ici
-                fact.setId(txtId.getText());
-                ev.setId(cmbIdVehicule.getSelectedItem().toString());
-                fact.setEntry_Vehicule(ev);
-                fact.setDate_sortie(new Date(jXDatePicker1.getDate().getYear(), jXDatePicker1.getDate().getMonth(), jXDatePicker1.getDate().getDate()));
-                fact.setType_Facturation(cmbType.getSelectedItem().toString());
-                fact.setNom_client_fidele(txtClient_Fidele.getText());
-                fact.setDescription(txtDescription.getText());
-                fact.setTotal(Float.valueOf(txtTotal.getText()));
-                mois.setMois(cmbMois.getSelectedItem().toString());
-                an.setAnnee(cmbAnnee.getSelectedItem().toString());
-                fact.setMois(mois);
-                fact.setAnnee(an);
-                if (fact.Enregsitrer()) {
-                    JOptionPane.showMessageDialog(null, "Facture etablie avec succes", "Facturation Message", JOptionPane.INFORMATION_MESSAGE);
-                    ClsHelper.Load_TblData(jTable1, "SELECT * FROM tFacturation");
-                    txtId.setText("FACT0"+ClsHelper.Increment_IDStr("tFacturation"));
-                    changeStateEntry(cmbIdVehicule.getSelectedItem().toString());
-                }
-            }
-            catch (Exception e)
-            {
-                JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
-            }
-        }
-        else if (cmbType.getSelectedItem().toString().equals("FACTURATION NORMALE")) 
-        {
-            try
-            {
-                // code ici
-                fact.setId(txtId.getText());
-                ev.setId(cmbIdVehicule.getSelectedItem().toString());
-                fact.setEntry_Vehicule(ev);
-                fact.setDate_sortie(new Date(jXDatePicker1.getDate().getYear(), jXDatePicker1.getDate().getMonth(), jXDatePicker1.getDate().getDate()));
-                fact.setType_Facturation(cmbType.getSelectedItem().toString());
-                fact.setNom_client_fidele(txtClient_Fidele.getText());
-                fact.setDescription(txtDescription.getText());
-                fact.setPoids_facture(txtPoids.getText());
-                fact.setNbre_jour(txtNbreJour.getText());
-                fact.setParking(txtParking.getText());
-                fact.setSureveillance_1(txtSurv1.getText());
-                fact.setSureveillance_2(txtSurv2.getText());
-                fact.setManutention(txtManutention.getText());
-                fact.setTva(txtTva.getText());
-                fact.setFrais_admin(txtFraisAdmin.getText());
-                fact.setTotal(Float.valueOf(txtTotal.getText()));
-                mois.setMois(cmbMois.getSelectedItem().toString());
-                an.setAnnee(cmbAnnee.getSelectedItem().toString());
-                fact.setMois(mois);
-                fact.setAnnee(an);
-                if (fact.Enregsitrer()) {
-                    JOptionPane.showMessageDialog(null, "Facture établie avec succès", "Facturation Message", JOptionPane.INFORMATION_MESSAGE);
-                    ClsHelper.Load_TblData(jTable1, "SELECT * FROM tFacturation");
-                    txtId.setText("FACT0"+ClsHelper.Increment_IDStr("tFacturation"));
-                    changeStateEntry(cmbIdVehicule.getSelectedItem().toString());
-                }
-            }
-            catch (Exception e)
-            {
-                JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Entry Loading Error", JOptionPane.WARNING_MESSAGE);
-            }
-        }
-    }
     }//GEN-LAST:event_jLabel15MouseClicked
 
     private void cmbIdVehiculePopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_cmbIdVehiculePopupMenuWillBecomeInvisible
-    getEntry_Element(cmbIdVehicule.getSelectedItem().toString());
+        getEntry_Element(cmbIdVehicule.getSelectedItem().toString());
     }//GEN-LAST:event_cmbIdVehiculePopupMenuWillBecomeInvisible
 
     private void cmbMoisPopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_cmbMoisPopupMenuWillBecomeInvisible
-        try
-        {
+        try {
             ClsHelper.Load_TblData(jTable1, "SELECT f.id ID, CONCAT(e.id,' - ',e.date_entree,' - ', e.plaque, ' - ', e.numero) VEHICULE, "
-            + "f.date_sortie DATE_SORTIE, f.nom_client_fidele CLIENT, f.[description] [DESCRIPTION], f.poids_facture POIDS_FACTURE, "
-            + "f.nbre_jour NOMBRE_JOURS, f.parking PARKING, f.sureveillance_1 [SURV 1], f.sureveillance_2 [SURV 2], f.manutention MANUTENTION, "
-            + "f.tva TVA, f.frais_admin FRAIS_ADMIN, f.total MONTANT_TOTAL FROM tFacturation f "
-            + "INNER JOIN tEntry_Vehicule e ON f.idEntree_vehicule = e.id "
-            + "INNER JOIN tMois m ON f.idMois = m.id "
-            + "INNER JOIN tAnnee a ON f.idAnnee = a.id "
-            + "WHERE m.mois = '"+cmbMois.getSelectedItem().toString()+"' "
-            + "AND a.annee = '"+cmbAnnee.getSelectedItem().toString()+"'");
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Facturation Loading Error", JOptionPane.WARNING_MESSAGE);
+                    + "f.date_sortie DATE_SORTIE, f.nom_client_fidele CLIENT, f.[description] [DESCRIPTION], f.poids_facture POIDS_FACTURE, "
+                    + "f.nbre_jour NOMBRE_JOURS, f.parking PARKING, f.sureveillance_1 [SURV 1], f.sureveillance_2 [SURV 2], f.manutention MANUTENTION, "
+                    + "f.tva TVA, f.frais_admin FRAIS_ADMIN, f.total MONTANT_TOTAL FROM tFacturation f "
+                    + "INNER JOIN tEntry_Vehicule e ON f.idEntree_vehicule = e.id "
+                    + "INNER JOIN tMois m ON f.idMois = m.id "
+                    + "INNER JOIN tAnnee a ON f.idAnnee = a.id "
+                    + "WHERE m.mois = '" + cmbMois.getSelectedItem().toString() + "' "
+                    + "AND a.annee = '" + cmbAnnee.getSelectedItem().toString() + "'");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Facturation Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_cmbMoisPopupMenuWillBecomeInvisible
 
     private void cmbAnneePopupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent evt) {//GEN-FIRST:event_cmbAnneePopupMenuWillBecomeInvisible
-        try
-        {
+        try {
             ClsHelper.Load_TblData(jTable1, "SELECT f.id ID, CONCAT(e.id,' - ',e.date_entree,' - ', e.plaque, ' - ', e.numero) VEHICULE, "
-            + "f.date_sortie DATE_SORTIE, f.nom_client_fidele CLIENT, f.[description] [DESCRIPTION], f.poids_facture POIDS_FACTURE, "
-            + "f.nbre_jour NOMBRE_JOURS, f.parking PARKING, f.sureveillance_1 [SURV 1], f.sureveillance_2 [SURV 2], f.manutention MANUTENTION, "
-            + "f.tva TVA, f.frais_admin FRAIS_ADMIN, f.total MONTANT_TOTAL FROM tFacturation f "
-            + "INNER JOIN tEntry_Vehicule e ON f.idEntree_vehicule = e.id "
-            + "INNER JOIN tMois m ON f.idMois = m.id "
-            + "INNER JOIN tAnnee a ON f.idAnnee = a.id "
-            + "WHERE m.mois = '"+cmbMois.getSelectedItem().toString()+"' "
-            + "AND a.annee = '"+cmbAnnee.getSelectedItem().toString()+"'");
-        }
-        catch (Exception e)
-        {
-            JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Facturation Loading Error", JOptionPane.WARNING_MESSAGE);
+                    + "f.date_sortie DATE_SORTIE, f.nom_client_fidele CLIENT, f.[description] [DESCRIPTION], f.poids_facture POIDS_FACTURE, "
+                    + "f.nbre_jour NOMBRE_JOURS, f.parking PARKING, f.sureveillance_1 [SURV 1], f.sureveillance_2 [SURV 2], f.manutention MANUTENTION, "
+                    + "f.tva TVA, f.frais_admin FRAIS_ADMIN, f.total MONTANT_TOTAL FROM tFacturation f "
+                    + "INNER JOIN tEntry_Vehicule e ON f.idEntree_vehicule = e.id "
+                    + "INNER JOIN tMois m ON f.idMois = m.id "
+                    + "INNER JOIN tAnnee a ON f.idAnnee = a.id "
+                    + "WHERE m.mois = '" + cmbMois.getSelectedItem().toString() + "' "
+                    + "AND a.annee = '" + cmbAnnee.getSelectedItem().toString() + "'");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Facturation Loading Error", JOptionPane.WARNING_MESSAGE);
         }
     }//GEN-LAST:event_cmbAnneePopupMenuWillBecomeInvisible
+
+    private void jLabel16MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel16MouseClicked
+    }//GEN-LAST:event_jLabel16MouseClicked
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+
+    }//GEN-LAST:event_jTable1MouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -17,22 +17,21 @@ import javax.swing.JOptionPane;
  * @author Brain
  */
 public class PnlDepense extends javax.swing.JPanel {
+
     ClsDepense_Sortie dep = new ClsDepense_Sortie();
     ClsMois mois = new ClsMois();
     ClsAnnee annee = new ClsAnnee();
+
     /**
      * Creates new form PnlDepense
      */
     public PnlDepense() {
         initComponents();
-        try 
-        {
+        try {
             ClsHelper.Increment_ID("tDepense_Sortie");
             ClsHelper.Load_TblData(jTable1, "SELECT * FROM tDepense_Sortie");
-        }
-        catch (Exception e) 
-        {
-            JOptionPane.showMessageDialog(null, "Error:\n"+e.getMessage(), "Depense Error", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error:\n" + e.getMessage(), "Depense Error", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -77,6 +76,11 @@ public class PnlDepense extends javax.swing.JPanel {
         dropShadowBorder1.setShowTopShadow(true);
         jLabel16.setBorder(dropShadowBorder1);
         jLabel16.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel16.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel16MouseClicked(evt);
+            }
+        });
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel1.setText("DEPENSES - SORTIES");
@@ -256,35 +260,38 @@ public class PnlDepense extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
-    if(dt_depense.getDate() == null)
-    {
-        JOptionPane.showMessageDialog(null, "Entrez la Date SVP", "Entry_Vehicule Error", JOptionPane.WARNING_MESSAGE);
-    }
-    else{
-        try 
-        {
-            dep.setId(Integer.valueOf(txtId.getText()));
-            dep.setDate_depense(new Date(dt_depense.getDate().getYear(), dt_depense.getDate().getMonth(), dt_depense.getDate().getDate()));
-            dep.setMotif(txtMotif.getText());
-            dep.setMontant(Float.valueOf(txtMontant.getText()));
-            mois.setMois(cmbMois.getSelectedItem().toString());
-            annee.setAnnee(cmbAnnee.getSelectedItem().toString());
-            dep.setMois(mois);
-            dep.setAnnee(annee);
-            if (dep.Enregsitrer())
-            {
-                JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Depense_Sortie Message", JOptionPane.INFORMATION_MESSAGE);
-                ClsHelper.Increment_ID("tDepense_Sortie");
-                ClsHelper.Load_TblData(jTable1, "SELECT * FROM tDepense_Sortie");
-            }            
-        } 
-        catch (Exception e) 
-        {
-        JOptionPane.showMessageDialog(null, "Error :\n"+e.getMessage(), "Depense_Sortie Error", JOptionPane.WARNING_MESSAGE);
+        if (dt_depense.getDate() == null) {
+            JOptionPane.showMessageDialog(null, "Entrez la Date SVP", "Entry_Vehicule Error", JOptionPane.WARNING_MESSAGE);
+        } else {
+            try {
+                dep.setId(Integer.valueOf(txtId.getText()));
+                dep.setDate_depense(new Date(dt_depense.getDate().getYear(), dt_depense.getDate().getMonth(), dt_depense.getDate().getDate()));
+                dep.setMotif(txtMotif.getText());
+                dep.setMontant(Float.valueOf(txtMontant.getText()));
+                mois.setMois(cmbMois.getSelectedItem().toString());
+                annee.setAnnee(cmbAnnee.getSelectedItem().toString());
+                dep.setMois(mois);
+                dep.setAnnee(annee);
+                if (dep.Enregsitrer()) {
+                    JOptionPane.showMessageDialog(null, "Enregistré avec succès", "Depense_Sortie Message", JOptionPane.INFORMATION_MESSAGE);
+                    clean();
+                    ClsHelper.Increment_ID("tDepense_Sortie");
+                    ClsHelper.Load_TblData(jTable1, "SELECT * FROM tDepense_Sortie");
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error :\n" + e.getMessage(), "Depense_Sortie Error", JOptionPane.WARNING_MESSAGE);
+            }
         }
-    }
     }//GEN-LAST:event_jLabel15MouseClicked
 
+    private void jLabel16MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel16MouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jLabel16MouseClicked
+    void clean() {
+        txtMotif.setText(null);
+        txtMontant.setText(null);
+        txtMotif.requestFocus();
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox<String> cmbAnnee;
